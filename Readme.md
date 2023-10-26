@@ -24,6 +24,8 @@ Overall, `chain` provides a convenient way to work with iterable objects and per
 
 ## API
 
+See the [Diagrams](./Diagrams.md) for a visual representation of the API.
+
 ### Chain
 
 -   `chain(iter)` - creates a new instance of the `Chain` class

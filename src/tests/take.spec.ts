@@ -11,4 +11,16 @@ describe("take", () => {
         const result = await chain(range(0, 5)).take(10).toArray();
         expect(result).toEqual([0, 1, 2, 3, 4]);
     });
+
+    it("breaks the iteration of the input too", async () => {
+        const generatedItems: number[] = [];
+        const infiniteSourceWithLogging = chain(range(0, 10)).tap((value) => {
+            generatedItems.push(value);
+        });
+
+        const takenItems = await infiniteSourceWithLogging.take(5).toArray();
+
+        expect(generatedItems).toEqual([0, 1, 2, 3, 4]);
+        expect(takenItems).toEqual([0, 1, 2, 3, 4]);
+    });
 });
