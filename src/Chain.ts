@@ -140,6 +140,12 @@ class Chain<I> implements AsyncIterable<I> {
     }
 }
 
+/**
+ * Create a new chain
+ *
+ * Chain is a wrapper allowing to perform a chain of operations on an iterable.
+ * Such operations can be various transformations of data using methods of the chain.
+ */
 export function chain<T>(source: Iter<T>) {
     return new Chain(source);
 }

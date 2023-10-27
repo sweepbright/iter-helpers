@@ -30,6 +30,11 @@ export class Mux<T extends Iter<unknown>, E extends Iteratee<T> = Iteratee<T>>
     }
 }
 
+/**
+ * Creates an async iterable from a list of inputs
+ *
+ * Useful when you need to mix multiple sources of data into one
+ */
 export function mux<T extends Iter<unknown>>(
     inputs: T[],
 ): AsyncIterable<Iteratee<T>> {

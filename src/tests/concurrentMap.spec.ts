@@ -7,8 +7,6 @@ const sleep = (ms: number) => {
 
 describe("chain.concurrentMap", () => {
     it("calls a function for each item in parallel returning the transformed item", async () => {
-        const consumer = jest.fn();
-
         const input = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
         const startTime = Date.now();
@@ -26,7 +24,7 @@ describe("chain.concurrentMap", () => {
         let currentConcurrency = 0;
         let maxConcurrency = 0;
 
-        await chain(input)
+        const result = await chain(input)
             .concurrentMap(
                 {
                     // The only required option is concurrency
@@ -36,31 +34,20 @@ describe("chain.concurrentMap", () => {
                         currentConcurrency++;
                         maxConcurrency = Math.max(
                             maxConcurrency,
-                            currentConcurrency
+                            currentConcurrency,
                         );
                     },
                     onTaskCompleted() {
                         currentConcurrency--;
                     },
                 },
-                mapper
+                mapper,
             )
-            .consume(consumer);
+            .toArray();
 
         const endTime = Date.now();
 
-        expect(consumer.mock.calls).toEqual([
-            [2],
-            [4],
-            [6],
-            [8],
-            [10],
-            [12],
-            [14],
-            [16],
-            [18],
-            [20],
-        ]);
+        expect(result).toEqual([2, 4, 6, 8, 10, 12, 14, 16, 18, 20]);
 
         expect(maxConcurrency).toBe(concurrency);
 
@@ -70,27 +57,25 @@ describe("chain.concurrentMap", () => {
         // (Let's reserve a 10% overhead though)
         const overheadFactor = 0.1;
         expect(endTime - startTime).toBeLessThan(
-            Math.ceil(input.length / concurrency) * delay * (1 + overheadFactor)
+            Math.ceil(input.length / concurrency) *
+                delay *
+                (1 + overheadFactor),
         );
     });
 
     it("should process all items", async () => {
-        const consumer = jest.fn();
-
         const input = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
-        await chain(input)
+        const result = await chain(input)
             .concurrentMap({ concurrency: 4 }, async (a) => {
                 return a;
             })
-            .consume(consumer);
+            .toArray();
 
-        expect(consumer).toHaveBeenCalledTimes(input.length);
+        expect(result).toHaveLength(input.length);
     });
 
     it("should process all items with conditional stopping of the chain source", async () => {
-        const consumer = jest.fn();
-
         const input = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
         const fifo = new Fifo<number>();
@@ -101,7 +86,7 @@ describe("chain.concurrentMap", () => {
 
         let counter = 0;
 
-        await chain(fifo)
+        const result = await chain(fifo)
             .concurrentMap({ concurrency: 4 }, async (a) => {
                 return a * 2;
             })
@@ -111,8 +96,8 @@ describe("chain.concurrentMap", () => {
                     fifo.end();
                 }
             })
-            .consume(consumer);
+            .toArray();
 
-        expect(consumer).toHaveBeenCalledTimes(input.length);
+        expect(result).toHaveLength(input.length);
     });
 });

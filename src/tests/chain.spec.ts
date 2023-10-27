@@ -1,12 +1,18 @@
 import { chain } from "../Chain";
 
 describe("chain", () => {
+    it("has a consume method which resolves when the iteration is done", async () => {
+        //💡Rule: don't forget to call `.consume()` or `.toArray()`
+        // in order to start the iteration.
+        //💡Rule: `await` any of this method's result in order to
+        // wait for the iteration to be done.
+        await chain([1, 2, 3]).consume();
+    });
+
     it("consumes an array", async () => {
-        const consumer = jest.fn();
+        const result = await chain([1, 2, 3]).toArray();
 
-        await chain([1, 2, 3]).consume(consumer);
-
-        expect(consumer.mock.calls).toEqual([[1], [2], [3]]);
+        expect(result).toEqual([1, 2, 3]);
     });
 
     it("consumes an async iterator", async () => {
@@ -16,22 +22,8 @@ describe("chain", () => {
             yield 3;
         }
 
-        const consumer = jest.fn();
+        const result = await chain(generate()).toArray();
 
-        await chain(generate()).consume(consumer);
-
-        expect(consumer.mock.calls).toEqual([[1], [2], [3]]);
-    });
-
-    describe("toArray", () => {
-        it("consumes an async generator to array", async () => {
-            async function* generate() {
-                yield 1;
-                yield 2;
-                yield 3;
-            }
-
-            expect(await chain(generate()).toArray()).toEqual([1, 2, 3]);
-        });
+        expect(result).toEqual([1, 2, 3]);
     });
 });
