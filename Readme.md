@@ -46,3 +46,7 @@ See the [Diagrams](./Diagrams.md) for a visual representation of the API.
 ### Range
 
 -   `range(start, end?, step?)` - creates an iterator of numbers
+
+### Mux
+
+-   `mux(iterators)` - multiplexes multiple iterators into one
