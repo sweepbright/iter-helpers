@@ -36,6 +36,7 @@ See the [Diagrams](./Diagrams.md) for a visual representation of the API.
 -   `.take(n)` - returns the first n elements of an iterator
 -   `.skip(n)` - returns the last n elements of an iterator
 -   `.batch(n)` - splits an iterator into batches of size `n`
+-   `.interval(n)` - splits an iterator into intervals (tuples containing a pair of start and end items) of size `n`
 -   `.flatten()` - flattens an iterator of arrays into an iterator of elements
 -   `.toArray()` - converts an iterator to an array
 
