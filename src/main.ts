@@ -12,3 +12,4 @@ export * from "./Range";
 export * from "./Skip";
 export * from "./Take";
 export * from "./Tap";
+export * from "./Interval";
