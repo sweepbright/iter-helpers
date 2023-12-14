@@ -2,6 +2,7 @@ import { batch } from "./Batch";
 import { concurrentMap, ConcurrentMapOptions } from "./ConcurrentMap";
 import { filter } from "./Filter";
 import { flatten } from "./Flatten";
+import { interval } from "./Interval";
 import { Iter } from "./Iter";
 import { map } from "./Map";
 import { Operator } from "./Operator";
@@ -102,6 +103,16 @@ class Chain<I> implements AsyncIterable<I> {
      */
     batch(batchSize: number) {
         return this.pipe(batch(batchSize));
+    }
+
+    /**
+     * Caclulates the intervals of the items.
+     *
+     * Works like `batch`, but instead of returning batches of the given size,
+     * it returns pairs of their first and last items.
+     */
+    interval(size: number): Chain<[I, I]> {
+        return this.pipe(interval(size));
     }
 
     /**
