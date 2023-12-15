@@ -1,3 +1,5 @@
+import { sleep } from "./tests/sleep";
+
 export interface FifoOptions {
     highWatermark?: number;
     onSizeChange?: (size: number) => void;
@@ -89,7 +91,7 @@ export class Fifo<T> implements AsyncIterable<T> {
     }
     waitDrain(): Promise<void> {
         if (this.#isDrain()) {
-            return Promise.resolve();
+            return sleep(0);
         }
 
         const onDrainPromise =

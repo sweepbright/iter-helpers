@@ -34,4 +34,20 @@ describe("chain.interval", () => {
             [9, 9],
         ]);
     });
+
+    it("groups items into intervals, even if the size of the interval is 0", async () => {
+        const result = await chain(range(0, 10)).interval(0).toArray();
+        expect(result).toEqual([
+            [0, 0],
+            [1, 1],
+            [2, 2],
+            [3, 3],
+            [4, 4],
+            [5, 5],
+            [6, 6],
+            [7, 7],
+            [8, 8],
+            [9, 9],
+        ]);
+    });
 });

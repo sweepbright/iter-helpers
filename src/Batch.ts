@@ -1,18 +1,37 @@
-import { Iter } from "./Iter";
+import { bufferize } from "./Bufferize";
 import { Operator } from "./Operator";
 
-export function batch<T>(batchSize: number): Operator<T, T[]> {
-    return async function* batchOperator(input: Iter<T>): Iter<T[]> {
-        let currentBatch: T[] = [];
-        for await (const value of input) {
-            currentBatch.push(value);
-            if (currentBatch.length === batchSize) {
-                yield currentBatch;
-                currentBatch = [];
-            }
-        }
-        if (currentBatch.length > 0) {
-            yield currentBatch;
-        }
-    };
+export type BatchOptions =
+    | { size: number }
+    | { timeFrame: number }
+    | { size: number; timeFrame: number };
+
+export function batch<T>(
+    sizeOrOptions: number | BatchOptions,
+): Operator<T, T[]> {
+    const options =
+        typeof sizeOrOptions === "number"
+            ? { size: sizeOrOptions }
+            : sizeOrOptions;
+
+    let size = Infinity;
+    let timeFrame = undefined;
+
+    if ("size" in options) {
+        size = options.size;
+    }
+
+    if ("timeFrame" in options) {
+        timeFrame = options.timeFrame;
+    }
+
+    return bufferize({
+        timeFrame,
+        getInitialValue: (): T[] => [],
+        reducer(acc, value) {
+            acc.push(value);
+            return acc;
+        },
+        shouldFlush: (acc) => acc.length >= size,
+    });
 }
