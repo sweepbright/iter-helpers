@@ -53,13 +53,9 @@ describe("fifo", () => {
                 await f.waitDrain();
                 f.push(item);
             })
-            // This trick allows to call `end` only once, when all items
-            // have been pushed
-            .batch(Infinity)
-            .tap(() => {
+            .onEnd(() => {
                 f.end();
-            })
-            .flatten();
+            });
 
         const fifoReader = chain(f)
             .tap((item) => log(`Read: ${item}`))
@@ -79,6 +75,34 @@ describe("fifo", () => {
         expect(maxObservedSize).toBe(highWatermark);
 
         // Check that the reader has read all the items
+        expect(itemsWritten).toEqual(itemsRead);
+    });
+
+    it("allows for back-pressure behavior when the highWatermark is 1", async () => {
+        const f = new Fifo<number>({
+            highWatermark: 1,
+        });
+
+        const input = chain(range(0, 10))
+            .tap(async (item) => {
+                await f.waitDrain();
+                f.push(item);
+            })
+            .onEnd(() => {
+                f.end();
+            });
+
+        async function* readFifo() {
+            yield* f;
+        }
+
+        const output = chain(readFifo());
+
+        const [itemsWritten, itemsRead] = await Promise.all([
+            input.toArray(),
+            output.toArray(),
+        ]);
+
         expect(itemsWritten).toEqual(itemsRead);
     });
 });

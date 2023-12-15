@@ -13,3 +13,5 @@ export * from "./Skip";
 export * from "./Take";
 export * from "./Tap";
 export * from "./Interval";
+export * from "./Bufferize";
+export * from "./OnEnd";

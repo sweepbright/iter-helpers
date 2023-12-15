@@ -1,4 +1,4 @@
-import { batch } from "./Batch";
+import { batch, BatchOptions } from "./Batch";
 import { concurrentMap, ConcurrentMapOptions } from "./ConcurrentMap";
 import { filter } from "./Filter";
 import { flatten } from "./Flatten";
@@ -6,9 +6,11 @@ import { interval } from "./Interval";
 import { Iter } from "./Iter";
 import { map } from "./Map";
 import { Operator } from "./Operator";
+import { bufferize, BufferizeOptions } from "./Bufferize";
 import { skip } from "./Skip";
 import { take } from "./Take";
 import { tap } from "./Tap";
+import { onEnd } from "./OnEnd";
 
 class Chain<I> implements AsyncIterable<I> {
     constructor(private source: Iter<I>) {}
@@ -101,8 +103,8 @@ class Chain<I> implements AsyncIterable<I> {
      * Once the iteration is stopped, the rest of the items will be returned
      * as a batch of possibly smaller size.
      */
-    batch(batchSize: number) {
-        return this.pipe(batch(batchSize));
+    batch(options: number | BatchOptions): Chain<I[]> {
+        return this.pipe(batch(options));
     }
 
     /**
@@ -148,6 +150,17 @@ class Chain<I> implements AsyncIterable<I> {
 
     skip(size: number): Chain<I> {
         return this.pipe(skip(size));
+    }
+
+    bufferize<O>(options: BufferizeOptions<I, O>): Chain<O> {
+        return this.pipe(bufferize(options));
+    }
+
+    /**
+     * Called once, when the iteration is done
+     */
+    onEnd(cb: () => void): Chain<I> {
+        return this.pipe(onEnd(cb));
     }
 }
 
