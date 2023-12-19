@@ -114,6 +114,60 @@ describe("Bufferize", () => {
         ]);
     });
 
+    it("can be used as a bufferizing timeframe-based actions reducer", async () => {
+        interface IncFoo {
+            type: "incFoo";
+            value: number;
+        }
+
+        interface IncBar {
+            type: "incBar";
+            value: number;
+        }
+
+        const actions: (IncFoo | IncBar)[] = [
+            { type: "incFoo", value: 1 },
+            { type: "incFoo", value: 1 },
+            { type: "incBar", value: -1 },
+            { type: "incBar", value: -1 },
+        ];
+
+        const stateSnapshots = await chain(actions)
+            .tap(() => sleep(10))
+            .bufferize({
+                getInitialValue: () => ({ foo: 0, bar: 0 }),
+                getNextInitialValue: (acc) => acc,
+                timeFrame: 15,
+                reducer(acc, action) {
+                    switch (action.type) {
+                        case "incFoo":
+                            return {
+                                ...acc,
+                                foo: acc.foo + action.value,
+                            };
+
+                        case "incBar":
+                            return {
+                                ...acc,
+                                bar: acc.bar + action.value,
+                            };
+                    }
+                },
+            })
+            .toArray();
+
+        expect(stateSnapshots).toEqual([
+            { foo: 2, bar: 0 },
+            { foo: 2, bar: -2 },
+
+            // Compare it to the previous example:
+            // { foo: 1, bar: 0 },
+            // { foo: 2, bar: 0 },  // <---
+            // { foo: 2, bar: -1 },
+            // { foo: 2, bar: -2 }, // <---
+        ]);
+    });
+
     it("can be used as a non-standard batcher, packing numbers into batches when their sum exceeds a threshold", async () => {
         interface BatchWithSum {
             sum: number;
