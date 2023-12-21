@@ -1,7 +1,7 @@
 import { bufferize } from "./Bufferize";
-import { Operator } from "./Operator";
+import { OperatorFunction } from "./Operator";
 
-export function interval<T>(size: number): Operator<T, [T, T]> {
+export function interval<T>(size: number): OperatorFunction<T, [T, T]> {
     return bufferize({
         getInitialValue: (): [T, T] | null => null,
         reducer(acc, value): [T, T] {
@@ -13,5 +13,5 @@ export function interval<T>(size: number): Operator<T, [T, T]> {
         },
         shouldFlush: (_, __, bufferizedItemsCount) =>
             bufferizedItemsCount >= size,
-    }) as Operator<T, [T, T]>;
+    }) as OperatorFunction<T, [T, T]>;
 }
