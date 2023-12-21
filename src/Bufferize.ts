@@ -1,6 +1,6 @@
 import { Fifo } from "./Fifo";
 import { Iter } from "./Iter";
-import { Operator } from "./Operator";
+import { OperatorFunction } from "./Operator";
 
 export interface BufferizeOptions<T, R> {
     getInitialValue: () => R;
@@ -16,7 +16,7 @@ export function bufferize<T, R>({
     reducer,
     shouldFlush = () => false,
     timeFrame,
-}: BufferizeOptions<T, R>): Operator<T, R> {
+}: BufferizeOptions<T, R>): OperatorFunction<T, R> {
     return async function* bufferizeOperator(input: Iter<T>): Iter<R> {
         const outputQueue = new Fifo<R>({
             highWatermark: 1,

@@ -1,5 +1,5 @@
 import { bufferize } from "./Bufferize";
-import { Operator } from "./Operator";
+import { OperatorFunction } from "./Operator";
 
 export type BatchOptions =
     | { size: number }
@@ -8,7 +8,7 @@ export type BatchOptions =
 
 export function batch<T>(
     sizeOrOptions: number | BatchOptions,
-): Operator<T, T[]> {
+): OperatorFunction<T, T[]> {
     const options =
         typeof sizeOrOptions === "number"
             ? { size: sizeOrOptions }

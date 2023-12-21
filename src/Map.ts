@@ -1,14 +1,16 @@
 import { Iter } from "./Iter";
-import { Operator } from "./Operator";
+import { OperatorFunction } from "./Operator";
 
 export function map<Input, Output, ErrorOutput = never>(
     mapper: (input: Input) => Output | Promise<Output>,
     errorMapper?: (
         input: Input,
-        error: unknown
-    ) => ErrorOutput | Promise<ErrorOutput>
-): Operator<Input, Output | ErrorOutput> {
-    return async function* mapOperator(input: Iter<Input>): Iter<Output> {
+        error: unknown,
+    ) => ErrorOutput | Promise<ErrorOutput>,
+): OperatorFunction<Input, Output | ErrorOutput> {
+    return async function* mapOperator(
+        input: Iter<Input>,
+    ): Iter<Output | ErrorOutput> {
         for await (const value of input) {
             let result: Output;
             try {

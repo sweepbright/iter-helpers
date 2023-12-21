@@ -1,7 +1,7 @@
 import { Iter } from "./Iter";
-import { Operator } from "./Operator";
+import { OperatorFunction } from "./Operator";
 
-export function take<T>(size: number): Operator<T, T> {
+export function take<T>(size: number): OperatorFunction<T, T> {
     return async function* takeOperator(input: Iter<T>): Iter<T> {
         let taken = 0;
         for await (const value of input) {

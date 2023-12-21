@@ -1,9 +1,9 @@
 import { Iter } from "./Iter";
-import { Operator } from "./Operator";
+import { OperatorFunction } from "./Operator";
 
 export function tap<T>(
-    tapper: (input: T) => void | Promise<void>
-): Operator<T, T> {
+    tapper: (input: T) => void | Promise<void>,
+): OperatorFunction<T, T> {
     return async function* tapOperator(input: Iter<T>): Iter<T> {
         for await (const value of input) {
             await tapper(value);
