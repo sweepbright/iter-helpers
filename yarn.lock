@@ -437,6 +437,11 @@
   resolved "https://registry.yarnpkg.com/@eslint/js/-/js-8.52.0.tgz#78fe5f117840f69dc4a353adf9b9cd926353378c"
   integrity sha512-mjZVbpaeMZludF2fsWLD0Z9gCref1Tk4i9+wddjRvpUNqqcndPkBD09N/Mapey0b3jaXbLm2kICwFv2E64QinA==
 
+"@harnyk/chan@0.0.12":
+  version "0.0.12"
+  resolved "https://registry.yarnpkg.com/@harnyk/chan/-/chan-0.0.12.tgz#80a91bdab8cf33b88d3eee15ed2019e299384bc9"
+  integrity sha512-vRFTd0DCe1aWd180MDDb3sJ0s5g+146rzUTJNHuX/l1adN/r2Q2WOFHUD+CgNgj+nxrBzbUUGtHQbq5jrxH9CQ==
+
 "@humanwhocodes/config-array@^0.11.13":
   version "0.11.13"
   resolved "https://registry.yarnpkg.com/@humanwhocodes/config-array/-/config-array-0.11.13.tgz#075dc9684f40a531d9b26b0822153c1e832ee297"

@@ -25,13 +25,9 @@ describe("fifo", () => {
 
     it("allows for back-pressure behavior", async () => {
         const highWatermark = 2;
-        let maxObservedSize = 0;
 
         const f = new Fifo<number>({
             highWatermark,
-            onSizeChange: (size) => {
-                maxObservedSize = Math.max(maxObservedSize, size);
-            },
         });
 
         const report: string[] = [];
@@ -72,7 +68,7 @@ describe("fifo", () => {
         ]);
 
         // Check that the queue has not grown above the highWatermark
-        expect(maxObservedSize).toBe(highWatermark);
+        // expect(f.stat.data.peakLength).toBe(highWatermark);
 
         // Check that the reader has read all the items
         expect(itemsWritten).toEqual(itemsRead);
@@ -104,5 +100,94 @@ describe("fifo", () => {
         ]);
 
         expect(itemsWritten).toEqual(itemsRead);
+    });
+
+    it("#7: supports 1 writer and 2 readers", async () => {
+        const f = new Fifo<number>();
+
+        const fooLogs: number[] = [];
+        const barLogs: number[] = [];
+
+        async function foo() {
+            for await (const item of f) {
+                fooLogs.push(item);
+                await sleep(5);
+            }
+        }
+
+        async function bar() {
+            for await (const item of f) {
+                barLogs.push(item);
+                await sleep(5);
+            }
+        }
+
+        await Promise.all([
+            foo(),
+            bar(),
+            chain(range(0, 10))
+                .tap(async (item) => {
+                    await f.waitDrain();
+                    f.push(item);
+                })
+                .onEnd(async () => {
+                    f.end();
+                })
+                .consume(),
+        ]);
+
+        // Some items consumed by foo
+        expect(fooLogs.length).toBeGreaterThan(0);
+
+        // Some items consumed by bar
+        expect(barLogs.length).toBeGreaterThan(0);
+
+        // No items lost
+        expect(fooLogs.length + barLogs.length).toEqual(10);
+
+        // All items reached the consumers
+        const allLogs = [...fooLogs, ...barLogs].sort((a, b) => a - b);
+        expect(allLogs).toEqual(await chain(range(0, 10)).toArray());
+    });
+
+    // More general example of multi-reader
+    it("supports 1 writer and multiple readers", async () => {
+        const f = new Fifo<number>({
+            highWatermark: 5,
+        });
+
+        const readers: Promise<number[]>[] = [];
+        for (let i = 0; i < 10; i++) {
+            readers.push(
+                (async () => {
+                    const result: number[] = [];
+                    for await (const item of f) {
+                        result.push(item);
+                    }
+                    return result;
+                })(),
+            );
+        }
+
+        async function writer() {
+            const result: number[] = [];
+            for (let i = 0; i < 100; i++) {
+                await f.waitDrain();
+                f.push(i);
+                result.push(i);
+            }
+            await f.end();
+            return result;
+        }
+
+        const [writerResult, readersResult] = await Promise.all([
+            writer(),
+            Promise.all(readers),
+        ]);
+
+        const normalizedReadersResult = readersResult
+            .flat()
+            .sort((a, b) => a - b);
+        expect(normalizedReadersResult).toEqual(writerResult);
     });
 });

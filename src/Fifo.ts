@@ -1,50 +1,19 @@
-import { sleep } from "./tests/sleep";
+import { CompatChan } from "@harnyk/chan";
 
 export interface FifoOptions {
     highWatermark?: number;
-    onSizeChange?: (size: number) => void;
 }
 
 export class Fifo<T> implements AsyncIterable<T> {
-    #queue: T[] = [];
-    #ended = false;
+    #ch: CompatChan<T>;
 
-    #onDrain?: () => void;
-    #onDrainPromise?: Promise<void>;
-    #isDrain() {
-        return this.options?.highWatermark
-            ? this.#queue.length < this.options?.highWatermark
-            : true;
+    constructor(private options?: FifoOptions) {
+        this.#ch = new CompatChan<T>(this.options?.highWatermark ?? Infinity);
     }
-
-    #onEnd?: () => void;
-    #waitEnd() {
-        if (this.#ended) {
-            return Promise.resolve();
-        }
-        return new Promise<void>((resolve) => (this.#onEnd = resolve));
-    }
-
-    #onPush?: () => void;
-    #waitPush() {
-        return new Promise<void>((resolve) => (this.#onPush = resolve));
-    }
-
-    async *#flush(): AsyncGenerator<T> {
-        while (this.#queue.length) {
-            const prevIsDrain = this.#isDrain();
-            yield this.#queue.shift() as T;
-            this.#reportSize();
-            if (this.#isDrain() && !prevIsDrain) {
-                this.#onDrain?.();
-            }
-        }
-    }
-
-    constructor(private options?: FifoOptions) {}
 
     /**
      * Push an item to the queue.
+     * @deprecated Use `await send` instead
      *
      * This method returns `true` if the queue is drained, i.e. the queue's
      * length is less than the highWatermark (if any).
@@ -74,38 +43,27 @@ export class Fifo<T> implements AsyncIterable<T> {
      *
      * @param item
      * @returns `true` if the queue is drained, `false` otherwise
+     *
      */
     push(item: T): boolean {
-        if (this.#ended) {
-            return false;
-        }
-        this.#queue.push(item);
-        this.#reportSize();
-        const isDrain = this.#isDrain();
-        this.#onPush?.();
-        return isDrain;
+        return this.#ch.sendSync(item);
     }
 
-    #reportSize() {
-        this.options?.onSizeChange?.(this.#queue.length);
-    }
+    /**
+     * @deprecated Use `await send` instead
+     */
     waitDrain(): Promise<void> {
-        if (this.#isDrain()) {
-            return sleep(0);
-        }
+        return this.#ch.readySend();
+    }
 
-        const onDrainPromise =
-            this.#onDrainPromise ??
-            new Promise<void>((resolve) => {
-                this.#onDrain = resolve;
-            }).then(() => {
-                this.#onDrain = undefined;
-                this.#onDrainPromise = undefined;
-            });
-        if (!this.#onDrainPromise) {
-            this.#onDrainPromise = onDrainPromise;
-        }
-        return this.#onDrainPromise;
+    /**
+     * Sends an item to the fifo.
+     *
+     * Resolves as soon as the item is actually pushed.
+     * If the internal queue is full, blocks until the queue is drained.
+     */
+    send(item: T): Promise<void> {
+        return this.#ch.send(item);
     }
 
     /**
@@ -117,25 +75,19 @@ export class Fifo<T> implements AsyncIterable<T> {
      * the items will eventually be flushed, then the iteration will stop.
      *
      * After the `end` method is called, calls to the `push` method will
-     * return `false` and won't result in an item being pushed.     *
+     * return `false` and won't result in an item being pushed.
+     *
+     * Resolves once all items are read by consumers.
      */
-    end() {
-        if (this.#ended) {
-            return;
-        }
-        this.#ended = true;
-        const onEnd = this.#onEnd;
-        onEnd?.();
+    end(): Promise<void> {
+        return this.#ch.close();
+    }
+
+    get stat() {
+        return this.#ch.stat;
     }
 
     async *[Symbol.asyncIterator]() {
-        for (;;) {
-            yield* this.#flush();
-            await Promise.race([this.#waitPush(), this.#waitEnd()]);
-            if (this.#ended) {
-                break;
-            }
-        }
-        yield* this.#flush();
+        yield* this.#ch;
     }
 }
