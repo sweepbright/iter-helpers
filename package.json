@@ -33,7 +33,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "@harnyk/chan": "0.0.12"
+    "@harnyk/chan": "^0.0.13"
   },
   "devDependencies": {
     "@types/jest": "^28.1.6",
