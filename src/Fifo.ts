@@ -79,7 +79,7 @@ export class Fifo<T> implements AsyncIterable<T> {
      *
      * Resolves once all items are read by consumers.
      */
-    end(): Promise<void> {
+    end(): void {
         return this.#ch.close();
     }
 
