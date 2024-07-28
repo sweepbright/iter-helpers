@@ -3,7 +3,7 @@ import { Fifo } from "../Fifo";
 import { range } from "../Range";
 import { sleep } from "./sleep";
 
-describe("fifo", () => {
+describe("fifo - actual API", () => {
     it("creates an async iterator to which you can push items externally", async () => {
         const f = new Fifo<number>();
 
@@ -13,9 +13,9 @@ describe("fifo", () => {
         const [results] = await Promise.all([
             chain(f).toArray(),
             (async (): Promise<void> => {
-                f.push(1);
-                f.push(2);
-                f.push(3);
+                await f.send(1);
+                await f.send(2);
+                await f.send(3);
                 f.end();
             })(),
         ]);
@@ -38,16 +38,7 @@ describe("fifo", () => {
 
         const mainChain = chain(range(0, 10))
             .tap(async (item) => {
-                // 💡Note that we are using the `waitDrain` method here
-                // in order to make sure that the queue is drained.
-                // Use it as a best practice.
-                // 💡Another best practice is to avoid
-                // parallelizing the calls to `await waitDrain()` and `push()`.
-                // 💡There is an obvious reason to call `await waitDrain()` from inside
-                // any function that would pause an iteration of the chain, like
-                // in this example.
-                await f.waitDrain();
-                f.push(item);
+                await f.send(item);
             })
             .onEnd(() => {
                 f.end();
@@ -81,18 +72,13 @@ describe("fifo", () => {
 
         const input = chain(range(0, 10))
             .tap(async (item) => {
-                await f.waitDrain();
-                f.push(item);
+                await f.send(item);
             })
             .onEnd(() => {
                 f.end();
             });
 
-        async function* readFifo() {
-            yield* f;
-        }
-
-        const output = chain(readFifo());
+        const output = chain(f);
 
         const [itemsWritten, itemsRead] = await Promise.all([
             input.toArray(),
@@ -127,8 +113,7 @@ describe("fifo", () => {
             bar(),
             chain(range(0, 10))
                 .tap(async (item) => {
-                    await f.waitDrain();
-                    f.push(item);
+                    await f.send(item);
                 })
                 .onEnd(async () => {
                     f.end();
@@ -172,11 +157,10 @@ describe("fifo", () => {
         async function writer() {
             const result: number[] = [];
             for (let i = 0; i < 100; i++) {
-                await f.waitDrain();
-                f.push(i);
+                await f.send(i);
                 result.push(i);
             }
-            await f.end();
+            f.end();
             return result;
         }
 
