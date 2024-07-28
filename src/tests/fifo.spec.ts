@@ -68,7 +68,7 @@ describe("fifo", () => {
         ]);
 
         // Check that the queue has not grown above the highWatermark
-        // expect(f.stat.data.peakLength).toBe(highWatermark);
+        expect(f.stat.data.peakLength).toBe(highWatermark);
 
         // Check that the reader has read all the items
         expect(itemsWritten).toEqual(itemsRead);
