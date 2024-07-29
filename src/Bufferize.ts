@@ -45,9 +45,8 @@ export function bufferize<T, R>({
             const result = acc;
             acc = getNextInitialValue(acc);
             count = 0;
-            await outputQueue.waitDrain();
+            await outputQueue.send(result);
             cancelTimeframedFlush();
-            outputQueue.push(result);
         }
 
         async function readInput() {

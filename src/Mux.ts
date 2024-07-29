@@ -16,8 +16,7 @@ export class Mux<T extends Iter<unknown>, E extends Iteratee<T> = Iteratee<T>>
         const stopPromises = this.inputs.map((input) =>
             chain(input)
                 .tap(async (value) => {
-                    await fifo.waitDrain();
-                    fifo.push(value as E);
+                    await fifo.send(value as E);
                 })
                 .consume(),
         );

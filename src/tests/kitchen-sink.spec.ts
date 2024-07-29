@@ -39,13 +39,12 @@ describe("kitchen sink", () => {
 
         // Push back the task to the queue
         async function enqueueRetry(input: number[]) {
-            await queue.waitDrain();
-            return queue.push(input);
+            await queue.send(input);
         }
 
         // Check if the result is an error
         function isError<I, O>(
-            result: O | ErrorResult<I>
+            result: O | ErrorResult<I>,
         ): result is ErrorResult<I> {
             return (
                 result &&
@@ -64,8 +63,7 @@ describe("kitchen sink", () => {
             .map((value) => value + 1)
             .batch(10)
             .tap(async (batch) => {
-                await queue.waitDrain();
-                queue.push(batch);
+                await queue.send(batch);
             })
             .consume();
 
@@ -84,7 +82,7 @@ describe("kitchen sink", () => {
                         error: error as Error,
                         input,
                     } as const;
-                }
+                },
             )
             .tap(async (result) => {
                 if (isError(result)) {
