@@ -144,3 +144,13 @@ dist
 # End of https://www.toptal.com/developers/gitignore/api/node
 
 lib
+# Superpowers implementation plans are local only
+docs/superpowers/plans/
+
+dist
+
+# documentation site
+website/build
+website/.docusaurus
+website/docs/api
+website/.snippets

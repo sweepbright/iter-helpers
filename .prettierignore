@@ -1,0 +1,12 @@
+dist
+node_modules
+pnpm-lock.yaml
+coverage
+docs/superpowers
+.superpowers
+website/build
+website/.docusaurus
+website/docs/api
+website/.snippets
+website/node_modules
+website/pnpm-lock.yaml

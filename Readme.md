@@ -1,53 +1,39 @@
+[![CI](https://github.com/harnyk/iter-helpers/actions/workflows/ci.yml/badge.svg)](https://github.com/harnyk/iter-helpers/actions/workflows/ci.yml)
+[![npm](https://img.shields.io/npm/v/@harnyk/iter-helpers)](https://www.npmjs.com/package/@harnyk/iter-helpers)
+
 # Iter Helpers
 
-This project provides a collection of helper functions for working with asyncronous iterators in TypeScript.
+> Requires Node.js 22 or newer.
+
+Composable operators for synchronous and asynchronous iterators in TypeScript: `map`, `filter`, `batch`, `concurrentMap`, `mux`, a back-pressured `Fifo` and more, chained fluently with `chain()`.
 
 ## Installation
 
-To install the package, run the following command:
-
 ```
-npm install @sweepbright/iter-helpers
+pnpm add @harnyk/iter-helpers
 ```
 
-## Usage
+`npm install @harnyk/iter-helpers` and `yarn add @harnyk/iter-helpers` work as well. The package ships ESM and CommonJS builds with type definitions.
 
-The `chain` function is used to create a new instance of the `Chain` class. The `Chain` class represents a chain of iterable objects, allowing for easy composition and manipulation of iterators.
+## Quick start
 
-Overall, `chain` provides a convenient way to work with iterable objects and perform operations on them in a chained manner.
+```ts
+import { chain, range } from "@harnyk/iter-helpers";
 
-## Glossary
+const result = await chain(range(1, 6))
+    .map((n) => n * 2)
+    .skip(1)
+    .take(3)
+    .toArray();
+// => [4, 6, 8]
+```
 
--   `Iter` - a convenient interface defining both synchronous and asynchronous iterator
--   operator - a function that takes an iterator and returns a new iterator
--   piping - composition of operators
+`chain()` accepts anything you can iterate with `for await`: an array, a generator or an async generator. Every method of the chain applies an operator and returns a new chain. Chains are lazy: nothing is read from the source until you consume the chain with `toArray()`, `consume()` or `for await`.
 
-## API
+## Documentation
 
-See the [Diagrams](./Diagrams.md) for a visual representation of the API.
+Guides, the list of operators, error handling, diagrams and the API reference are at **https://harnyk.github.io/iter-helpers/**.
 
-### Chain
+## License
 
--   `chain(iter)` - creates a new instance of the `Chain` class
--   `.pipe(operator)` - transform an iterator using an operator
--   `.map(mapFn, errorMapFn)` - applies a function to each element of an iterator
--   `.concurrentMap(options, mapFn, errorMapFn)` - applies a function to each element of an iterator concurrently
--   `.filter(fn)` - filters elements of an iterator based on a predicate
--   `.take(n)` - returns the first n elements of an iterator
--   `.skip(n)` - returns the last n elements of an iterator
--   `.batch(n)` - splits an iterator into batches of size `n`
--   `.interval(n)` - splits an iterator into intervals (tuples containing a pair of start and end items) of size `n`
--   `.flatten()` - flattens an iterator of arrays into an iterator of elements
--   `.toArray()` - converts an iterator to an array
-
-### Fifo
-
--   `new Fifo(options)` - creates a FIFO queue
-
-### Range
-
--   `range(start, end?, step?)` - creates an iterator of numbers
-
-### Mux
-
--   `mux(iterators)` - multiplexes multiple iterators into one
+[MIT](./LICENSE)

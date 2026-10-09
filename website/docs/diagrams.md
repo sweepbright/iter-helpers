@@ -1,3 +1,7 @@
+# Diagrams
+
+Pictures of what the operators do. Each diagram shows the items entering an operator and the items leaving it.
+
 ## Filter
 
 ```ts
@@ -83,6 +87,8 @@ graph TD
 ```
 
 ## Mux
+
+The interleaving below is only an example: the order across inputs is not defined, the order within each input is kept.
 
 ```ts
 chain(

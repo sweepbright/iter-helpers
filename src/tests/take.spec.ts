@@ -1,3 +1,4 @@
+import { describe, it, expect } from "vitest";
 import { chain } from "../Chain";
 import { range } from "../Range";
 
@@ -22,5 +23,33 @@ describe("take", () => {
 
         expect(generatedItems).toEqual([0, 1, 2, 3, 4]);
         expect(takenItems).toEqual([0, 1, 2, 3, 4]);
+    });
+
+    it("take(0) is empty and does not read the source", async () => {
+        let reads = 0;
+        function* source() {
+            reads++;
+            yield 1;
+            yield 2;
+        }
+
+        const result = await chain(source()).take(0).toArray();
+
+        expect(result).toEqual([]);
+        expect(reads).toBe(0);
+    });
+
+    it("a negative size is empty as well and does not read the source", async () => {
+        let reads = 0;
+        function* source() {
+            reads++;
+            yield 1;
+            yield 2;
+        }
+
+        const result = await chain(source()).take(-1).toArray();
+
+        expect(result).toEqual([]);
+        expect(reads).toBe(0);
     });
 });
